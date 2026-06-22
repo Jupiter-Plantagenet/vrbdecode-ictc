@@ -1,6 +1,6 @@
 """Forensic verification with reason-coded outcomes.
 
-Implements the verification logic described in ICUFN paper Sections 3--4:
+Implements the verification logic described in ICTC paper Sections 3--4:
   - Policy commitment verification
   - Randomness derivation and replay detection
   - Candidate digest integrity
@@ -36,7 +36,7 @@ from receipt import (
 
 
 # ---------------------------------------------------------------------------
-# Reason codes (ICUFN Section 3.3)
+# Reason codes (ICTC Section 3.3)
 # ---------------------------------------------------------------------------
 
 class VerifyCode(enum.Enum):

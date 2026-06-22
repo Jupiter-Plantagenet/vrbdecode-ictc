@@ -1,4 +1,4 @@
-"""Attack simulation for four adversarial classes (ICUFN Section 4).
+"""Attack simulation for four adversarial classes (ICTC Section 4).
 
 Each function takes an honest transcript and returns a tampered copy.
 The tampered transcript is self-consistent in the fields the attacker

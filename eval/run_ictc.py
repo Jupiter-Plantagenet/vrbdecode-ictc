@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""ICUFN evaluation runner.
+"""ICTC evaluation runner.
 
-Reproduces the experiments described in the ICUFN paper:
+Reproduces the experiments described in the ICTC paper:
   Section 5.1 -- Security-facing metrics (detection rate, FP/FN,
                  attribution accuracy per attack class)
   Section 5.2 -- Operational metrics (verification latency, storage
@@ -10,15 +10,15 @@ Reproduces the experiments described in the ICUFN paper:
 Usage
 -----
 Quick sanity run (small K, few transcripts):
-    python3 eval/run_icufn.py --quick
+    python3 eval/run_ictc.py --quick
 
 Full paper-grade run:
-    python3 eval/run_icufn.py
+    python3 eval/run_ictc.py
 
 Output files (under eval/):
-    icufn_detection.csv   -- per-attack detection/attribution results
-    icufn_operational.csv -- per-config operational metrics
-    icufn_results.json    -- consolidated results with metadata
+    ictc_detection.csv   -- per-attack detection/attribution results
+    ictc_operational.csv -- per-config operational metrics
+    ictc_results.json    -- consolidated results with metadata
 """
 from __future__ import annotations
 
@@ -668,7 +668,7 @@ def _write_csv(path: str, rows: List[Dict[str, Any]]) -> None:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="ICUFN evaluation runner")
+    ap = argparse.ArgumentParser(description="ICTC evaluation runner")
     ap.add_argument(
         "--quick", action="store_true",
         help="Run reduced configuration for quick sanity check",
@@ -685,7 +685,7 @@ def main() -> int:
 
     cfg = QUICK_CONFIG if args.quick else FULL_CONFIG
     logit_mode = "uniform" if args.uniform_logits else "zipf-like"
-    print(f"ICUFN evaluation: {'quick' if args.quick else 'full'} mode")
+    print(f"ICTC evaluation: {'quick' if args.quick else 'full'} mode")
     print(f"  K values:     {cfg.K_values}")
     print(f"  N steps:      {cfg.n_steps_values}")
     print(f"  Transcripts:  {cfg.n_transcripts}")
@@ -715,8 +715,8 @@ def main() -> int:
 
     # Write outputs
     out_dir = args.out_dir
-    _write_csv(os.path.join(out_dir, "icufn_detection.csv"), det_summary)
-    _write_csv(os.path.join(out_dir, "icufn_operational.csv"), ops_summary)
+    _write_csv(os.path.join(out_dir, "ictc_detection.csv"), det_summary)
+    _write_csv(os.path.join(out_dir, "ictc_operational.csv"), ops_summary)
 
     consolidated = {
         "mode": "quick" if args.quick else "full",
@@ -740,7 +740,7 @@ def main() -> int:
             "wilson_ci_95_hi": fp_result.wilson_hi,
         },
     }
-    json_path = os.path.join(out_dir, "icufn_results.json")
+    json_path = os.path.join(out_dir, "ictc_results.json")
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(consolidated, f, indent=2)
 
@@ -842,7 +842,7 @@ def main() -> int:
     print(f"  FP rate:                   {fp_result.fp_rate:.4%}")
     print(f"  95% Wilson CI:             [{fp_result.wilson_lo:.6f}, {fp_result.wilson_hi:.6f}]")
 
-    print(f"\nResults written to: {out_dir}/icufn_*.{{csv,json}}")
+    print(f"\nResults written to: {out_dir}/ictc_*.{{csv,json}}")
     return 0
 
 

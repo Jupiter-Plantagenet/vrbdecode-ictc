@@ -5,7 +5,7 @@
 torch>=2.0
 transformers>=4.30
 
-# For figure regeneration (paper/icufn/generate_figures.py):
+# For figure regeneration (paper/ictc/generate_figures.py):
 matplotlib>=3.7
 numpy>=1.24
 

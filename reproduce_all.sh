@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# reproduce_all.sh -- Reproduce all experiments from the ICUFN paper.
+# reproduce_all.sh -- Reproduce all experiments from the ICTC paper.
 #
 # Usage:
 #   bash reproduce_all.sh          # Full paper-grade runs
@@ -71,10 +71,10 @@ else
 fi
 
 # -------------------------------------------------------------------
-# 2. Main ICUFN evaluation (Tables I & II, Section 5)
+# 2. Main ICTC evaluation (Tables I & II, Section 5)
 # -------------------------------------------------------------------
-run_experiment "ICUFN main evaluation (Tables I & II)" \
-    python3 eval/run_icufn.py $QUICK
+run_experiment "ICTC main evaluation (Tables I & II)" \
+    python3 eval/run_ictc.py $QUICK
 
 # -------------------------------------------------------------------
 # 3. Latency scaling (Figure 2)
@@ -124,7 +124,7 @@ echo "================================================================"
 echo "  Regenerating figures"
 echo "================================================================"
 if python3 -c "import matplotlib" 2>/dev/null; then
-    if python3 paper/icufn/generate_figures.py; then
+    if python3 paper/ictc/generate_figures.py; then
         echo "  >> Figure generation: PASSED"
         PASS=$((PASS + 1))
     else
@@ -133,7 +133,7 @@ if python3 -c "import matplotlib" 2>/dev/null; then
     fi
 else
     echo "  >> matplotlib not installed, skipping figure generation"
-    echo "  >> Pre-generated figures available in paper/icufn/figures/"
+    echo "  >> Pre-generated figures available in paper/ictc/figures/"
     SKIP=$((SKIP + 1))
 fi
 
@@ -149,9 +149,9 @@ echo "  Failed:  $FAIL"
 echo "  Skipped: $SKIP"
 echo ""
 echo "  Output files:"
-echo "    eval/icufn_results.json           -- Main detection & operational results"
-echo "    eval/icufn_detection.csv          -- Per-attack detection rates"
-echo "    eval/icufn_operational.csv        -- Per-config latency & storage"
+echo "    eval/ictc_results.json           -- Main detection & operational results"
+echo "    eval/ictc_detection.csv          -- Per-attack detection rates"
+echo "    eval/ictc_operational.csv        -- Per-config latency & storage"
 echo "    eval/latency_scaling_results.json -- Latency scaling data (Figure 2)"
 echo "    eval/bias_heuristic_results.json  -- Bias heuristic data (Figure 3)"
 echo "    eval/adaptive_adversary_results.json -- Adaptive adversary analysis"

@@ -1,4 +1,4 @@
-"""Tests for the forensic verification pipeline (ICUFN).
+"""Tests for the forensic verification pipeline (ICTC).
 
 Covers:
   - Honest transcripts pass verification cleanly

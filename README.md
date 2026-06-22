@@ -1,14 +1,14 @@
-# Attack-Aware Forensic Receipts for Accountable LLM Decoding Services
+# Attack-Aware Forensic Receipts for Accountable Large Language Model Decoding Services
 
 **Authors:** George Chidera Akor, Love Allen Chijioke Ahakonye, Jae Min Lee, Dong-Seong Kim
 
 **Affiliation:** IT Convergence Engineering and NSLab Co. Ltd., Kumoh National Institute of Technology, Gumi, South Korea; ICT Convergence Research Center, Kumoh National Institute of Technology
 
-**Venue:** ICUFN 2026
+**Venue:** ICTC 2026
 
 ## Description
 
-This repository provides the complete source code and evaluation scripts to reproduce the results in the ICUFN 2026 paper "Attack-Aware Forensic Receipts for Accountable LLM Decoding Services." The paper presents a forensic audit architecture for LLM decoding services that binds policy commitments, per-step receipts, tamper-evident chaining, and deterministic re-execution into chain-of-custody evidence artifacts. The prototype achieves sub-millisecond per-step latency (0.021--0.067 ms/step), compact evidence artifacts (8--307 KB), 0.0% false positives across 10,000 honest transcripts, and 100% detection across five attack classes. A three-baseline comparison (Merkle log signing, policy-commitment verification, watermark detection) demonstrates that re-execution is necessary for reliable semantic attack detection (5/5 vs. 2/5 for the strongest alternative).
+This repository provides the complete source code and evaluation scripts to reproduce the results in the ICTC 2026 paper "Attack-Aware Forensic Receipts for Accountable Large Language Model Decoding Services." The paper presents a forensic audit architecture for LLM decoding services that binds policy commitments, per-step receipts, tamper-evident chaining, and deterministic re-execution into chain-of-custody evidence artifacts. The prototype achieves sub-millisecond per-step latency (0.021--0.067 ms/step), compact evidence artifacts (8--307 KB), 0.0% false positives across 10,000 honest transcripts, and 100% detection across five attack classes. A three-baseline comparison (Merkle log signing, policy-commitment verification, watermark detection) demonstrates that re-execution is necessary for reliable semantic attack detection (5/5 vs. 2/5 for the strongest alternative).
 
 ## Repository Structure
 
@@ -25,13 +25,13 @@ ref/python/              Core implementation
   security_analysis.py     Constructive security proofs
 
 eval/                    Evaluation scripts and results
-  run_icufn.py             Main evaluation (Tables I & II)
+  run_ictc.py             Main evaluation (Tables I & II)
   run_latency_scaling.py   Latency scaling experiment (Figure 2)
   run_bias_heuristic.py    Bias heuristic characterization (Figure 3)
   extract_gpt2_logits.py   GPT-2 logit validation (Section 5.4)
   *.json, *.csv            Pre-computed results
 
-paper/icufn/             Paper source and figures
+paper/ictc/             Paper source and figures
   main.tex                 LaTeX source
   refs.bib                 Bibliography
   main.pdf                 Compiled paper
@@ -87,11 +87,11 @@ Expected: All tests pass. Verifies correct detection of all five attack classes,
 #### 2. Main evaluation -- Tables I and II (Section 5)
 
 ```bash
-python3 eval/run_icufn.py           # Full: K in {16,32,64}, N in {32,64,128}, 50 transcripts
-python3 eval/run_icufn.py --quick   # Quick: K=16, N in {16,32}, 10 transcripts
+python3 eval/run_ictc.py           # Full: K in {16,32,64}, N in {32,64,128}, 50 transcripts
+python3 eval/run_ictc.py --quick   # Quick: K=16, N in {16,32}, 10 transcripts
 ```
 
-**Output files:** `eval/icufn_results.json`, `eval/icufn_detection.csv`, `eval/icufn_operational.csv`
+**Output files:** `eval/ictc_results.json`, `eval/ictc_detection.csv`, `eval/ictc_operational.csv`
 
 **Expected results:**
 - Detection rate: 100% for all five attack classes across all configurations
@@ -151,10 +151,10 @@ python3 eval/extract_gpt2_logits.py
 
 ```bash
 pip install matplotlib numpy
-python3 paper/icufn/generate_figures.py
+python3 paper/ictc/generate_figures.py
 ```
 
-Regenerates `paper/icufn/figures/latency_vs_n.{png,pdf}` and `paper/icufn/figures/bias_detection.{png,pdf}` from the result JSON files.
+Regenerates `paper/ictc/figures/latency_vs_n.{png,pdf}` and `paper/ictc/figures/bias_detection.{png,pdf}` from the result JSON files.
 
 ## Pre-Computed Results
 
