@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """ICTC evaluation runner.
 
-Reproduces the experiments described in the ICTC paper:
-  Section 5.1 -- Security-facing metrics (detection rate, FP/FN,
-                 attribution accuracy per attack class)
-  Section 5.2 -- Operational metrics (verification latency, storage
-                 overhead, audit throughput)
+Reproduces the evaluation described in the ICTC paper:
+  Security-facing metrics -- detection rate, false positives,
+                 per-class attribution
+  Operational metrics -- verification latency, storage overhead,
+                 audit throughput
 
 Usage
 -----

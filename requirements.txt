@@ -4,9 +4,6 @@
 # For the GPT-2 validation experiment (eval/extract_gpt2_logits.py):
 torch>=2.0
 transformers>=4.30
-
-# For figure regeneration (paper/ictc/generate_figures.py):
-matplotlib>=3.7
 numpy>=1.24
 
 # For running tests:

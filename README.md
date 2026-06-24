@@ -8,47 +8,48 @@
 
 ## Description
 
-This repository provides the complete source code and evaluation scripts to reproduce the results in the ICTC 2026 paper "Attack-Aware Forensic Receipts for Accountable Large Language Model Decoding Services." The paper presents a forensic audit architecture for LLM decoding services that binds policy commitments, per-step receipts, tamper-evident chaining, and deterministic re-execution into chain-of-custody evidence artifacts. The prototype achieves sub-millisecond per-step latency (0.021--0.067 ms/step), compact evidence artifacts (8--307 KB), 0.0% false positives across 10,000 honest transcripts, and 100% detection across five attack classes. A three-baseline comparison (Merkle log signing, policy-commitment verification, watermark detection) demonstrates that re-execution is necessary for reliable semantic attack detection (5/5 vs. 2/5 for the strongest alternative).
+This repository provides the source code and evaluation scripts for the ICTC 2026 paper "Attack-Aware Forensic Receipts for Accountable Large Language Model Decoding Services." The paper presents a forensic audit architecture for LLM decoding services that binds policy commitments, per-step receipts, tamper-evident chaining under an **authenticated chain root**, and deterministic re-execution into chain-of-custody evidence artifacts.
+
+Deterministic re-execution detects every output-changing policy or randomness manipulation and all transcript-integrity attacks, with soundness reducing to hash collision-resistance and pseudorandom-function (PRF) security. Each failure maps to its own reason code, giving 100% per-class attribution. Candidate-list manipulation is detected against a ground-truth shortlist or, lacking one, against the authenticated root: a relay/store that edits the shortlist after generation and re-chains produces a root that diverges from the authenticated one, so downstream tampering is caught **without** ground truth. The one residual gap is a malicious receipt generator that fabricates a self-consistent shortlist and root at source, which the paper closes with client co-signing, an attested enclave, or a verifiable-forward-pass anchor. A provider that controls the seed can grind it to bias an output (a stated limitation), motivating VRF/beacon-supplied randomness.
+
+On a SHA-256 prototype the scheme attains 0.0% false positives (0/10,000 honest transcripts), sub-millisecond per-step latency (0.021–0.067 ms/step) and generation overhead, compact evidence artifacts (8–307 KB), and bit-identical receipt roots across independent processes. A three-baseline comparison (Merkle log signing, policy-commitment verification, watermark detection) shows re-execution is necessary for semantic attack detection (5/5 vs. 2/5 for the strongest alternative).
 
 ## Repository Structure
 
 ```
 ref/python/              Core implementation
   decoding_ref.py          Fixed-point decoding step (DecodeStep)
-  receipt.py               Receipt generation, chaining, and serialization
-  forensic_verifier.py     Verification algorithm with reason-coded outcomes
-  attack_simulator.py      Five attack implementations
+  receipt.py               Receipt generation, chaining, authenticated root
+  forensic_verifier.py     Verification with per-class reason codes
+  attack_simulator.py      Attack implementations (four classes)
   adaptive_attacker.py     Adaptive adversary with evasion search
   baseline_merkle.py       Baseline 1: Merkle log signing
   baseline_policy_commit.py Baseline 2: Policy-commitment verifier
   baseline_watermark.py    Baseline 3: Kirchenbauer-style watermark detector
   security_analysis.py     Constructive security proofs
 
-eval/                    Evaluation scripts and results
-  run_ictc.py             Main evaluation (Tables I & II)
-  run_latency_scaling.py   Latency scaling experiment (Figure 2)
-  run_bias_heuristic.py    Bias heuristic characterization (Figure 3)
-  extract_gpt2_logits.py   GPT-2 logit validation (Section 5.4)
+eval/                    Evaluation scripts and pre-computed results
+  run_ictc.py              Main detection + operational evaluation
+  run_review_upgrades.py   Attribution, authenticated-root ablation,
+                           determinism, inline overhead, seed-grinding,
+                           and Wilson-CI experiments
+  run_latency_scaling.py   Latency scaling vs. (K, N)
+  run_bias_heuristic.py    Supplementary bias-heuristic characterization
+  extract_gpt2_logits.py   GPT-2 logit validation
   *.json, *.csv            Pre-computed results
 
-paper/ictc/             Paper source and figures
-  main.tex                 LaTeX source
-  refs.bib                 Bibliography
-  main.pdf                 Compiled paper
-  generate_figures.py      Figure generation from result data
-  figures/                 Pre-generated figures
-
 tests/                   Unit tests
-  test_forensic_verifier.py  Verification pipeline tests
-  test_baseline_comparison.py Baseline comparison and security proof tests
+  test_forensic_verifier.py   Verification pipeline tests
+  test_baseline_comparison.py Baseline comparison and security-proof tests
 ```
+
+The paper source (LaTeX) is maintained separately; this repository is the code artifact and is referenced from the paper.
 
 ## Requirements
 
-- **Python 3.12+** (all core experiments use only the standard library)
+- **Python 3.12+** (the core pipeline and verifier use only the standard library)
 - **pytest** (for unit tests)
-- **torch + transformers** (only for GPT-2 validation experiment)
-- **matplotlib + numpy** (only for figure regeneration)
+- **torch + transformers + numpy** (only for the GPT-2 validation experiment)
 
 ### Install
 
@@ -56,7 +57,7 @@ tests/                   Unit tests
 # Minimal (core experiments only -- no external packages needed)
 pip install pytest
 
-# Full (including GPT-2 experiment and figure generation)
+# Full (including the GPT-2 validation experiment)
 pip install -r requirements.txt
 ```
 
@@ -68,7 +69,7 @@ pip install -r requirements.txt
 bash reproduce_all.sh --quick
 ```
 
-### Full paper-grade reproduction (~30 minutes without GPT-2, ~60 minutes with)
+### Full reproduction (~30 minutes without GPT-2, ~60 minutes with)
 
 ```bash
 bash reproduce_all.sh
@@ -82,59 +83,57 @@ bash reproduce_all.sh
 pytest tests/ -v
 ```
 
-Expected: All tests pass. Verifies correct detection of all five attack classes, baseline limitations (Merkle misses 3/5, policy-commit misses 3/5), and constructive security proofs.
+Verifies correct detection of all attack classes, baseline limitations (Merkle and policy-commit each miss the non-structural classes), and the constructive security proofs.
 
-#### 2. Main evaluation -- Tables I and II (Section 5)
+#### 2. Main detection and operational evaluation
 
 ```bash
-python3 eval/run_ictc.py           # Full: K in {16,32,64}, N in {32,64,128}, 50 transcripts
-python3 eval/run_ictc.py --quick   # Quick: K=16, N in {16,32}, 10 transcripts
+python3 eval/run_ictc.py           # Full: K in {16,32,64}, N in {32,64,128}
+python3 eval/run_ictc.py --quick   # Quick: K=16, N in {16,32}
 ```
 
-**Output files:** `eval/ictc_results.json`, `eval/ictc_detection.csv`, `eval/ictc_operational.csv`
+**Output:** `eval/ictc_results.json`, `eval/ictc_detection.csv`, `eval/ictc_operational.csv`
 
-**Expected results:**
-- Detection rate: 100% for all five attack classes across all configurations
-- Attribution accuracy: 100% (correct reason code assigned)
-- False-positive rate: 0.0% (0/10,000 honest transcripts; 95% Wilson CI [0.000000, 0.000369])
-- Baseline comparison: Forensic 5/5, Policy-Commit 2/5, Watermark 0/5, Merkle 2/5
-- Verification latency: 0.7--8.6 ms per transcript (sub-ms per step)
-- Evidence size: 8--307 KB depending on (K, N) configuration
+**Expected:** 100% detection when a tampered step is present; 0.0% false positives (0/10,000; 95% Wilson CI [0.0, 0.038]%); baseline comparison Forensic 5/5, Policy-Commit 2/5, Merkle 2/5, Watermark 0/5; per-step latency 0.021–0.067 ms; evidence size 8–307 KB.
 
-#### 3. Latency scaling -- Figure 2 (Section 5.2)
+#### 3. Reviewer-evidence upgrades
+
+```bash
+python3 eval/run_review_upgrades.py
+```
+
+**Output:** `eval/review_upgrades_results.json`
+
+**Expected:** per-class reason-code attribution 100% (5 classes × 100); downstream candidate tampering detected 100/100 against the authenticated root with no ground truth (vs. 13/100 by per-step checks alone); receipt root bit-identical across independent processes; inline receipt-generation overhead ≈0.04 ms/step; seed grinding under provider-chosen σ forces a target in a few tries and verifies clean (limitation); Wilson CIs for the headline counts.
+
+#### 4. Latency scaling
 
 ```bash
 python3 eval/run_latency_scaling.py           # Full: 15 (K,N) configs, 100 runs each
 python3 eval/run_latency_scaling.py --quick   # Quick: 6 configs, 30 runs each
 ```
 
-**Output:** `eval/latency_scaling_results.json`
+**Output:** `eval/latency_scaling_results.json` — linear scaling in N, per-step latency 0.021–0.067 ms/step.
 
-**Expected:** Linear scaling with N (sequence length). Per-step latency 0.021--0.067 ms/step. Throughput 100--1400 transcripts/sec.
-
-#### 4. Bias heuristic -- Figure 3 (Section 5.3)
-
-```bash
-python3 eval/run_bias_heuristic.py           # Full: 1000 FP transcripts, 200 per bias level
-python3 eval/run_bias_heuristic.py --quick   # Quick: 100 FP, 50 per level
-```
-
-**Output:** `eval/bias_heuristic_results.json`
-
-**Expected:** 0.0% false-positive rate on honest transcripts. Detection power increases monotonically with attacker bias fraction (from ~100% at p=0.1 via PRF mismatch to 100% at all levels).
-
-#### 5. Adaptive adversary (Section 5.3)
+#### 5. Adaptive adversary
 
 ```bash
 python3 ref/python/adaptive_attacker.py           # Full run
 python3 ref/python/adaptive_attacker.py --quick   # Quick run
 ```
 
-**Output:** `eval/adaptive_adversary_results.json`
+**Output:** `eval/adaptive_adversary_results.json` — 0% output-changing evasion at all entropy levels. Degenerate-case evasion (identical output despite a different policy) is harmless: there is nothing to detect because the output is correct.
 
-**Expected:** 0% output-change evasion rate. Degenerate-case evasion (identical output despite different policy) occurs only when the policy change has no effect on the selected token -- the verifier cannot detect these because there is nothing to detect (the output is correct).
+#### 6. Bias-heuristic characterization (supplementary)
 
-#### 6. GPT-2 validation (Section 5.4)
+```bash
+python3 eval/run_bias_heuristic.py           # Full: 1000 FP transcripts, 200 per bias level
+python3 eval/run_bias_heuristic.py --quick   # Quick: 100 FP, 50 per level
+```
+
+**Output:** `eval/bias_heuristic_results.json` — 0.0% false-positive rate on honest transcripts; the PRF check catches bias injection at all levels.
+
+#### 7. GPT-2 validation
 
 Requires `torch` and `transformers`:
 
@@ -143,22 +142,11 @@ pip install torch transformers
 python3 eval/extract_gpt2_logits.py
 ```
 
-**Output:** `eval/gpt2_validation_results.json`
-
-**Expected:** 100/100 honest transcripts pass. 100% detection rate for all attack types across 100 diverse prompts (4 categories x 25). Zero false positives. Sub-millisecond per-step verification latency on real GPT-2 logit distributions.
-
-#### 7. Regenerate figures
-
-```bash
-pip install matplotlib numpy
-python3 paper/ictc/generate_figures.py
-```
-
-Regenerates `paper/ictc/figures/latency_vs_n.{png,pdf}` and `paper/ictc/figures/bias_detection.{png,pdf}` from the result JSON files.
+**Output:** `eval/gpt2_validation_results.json` — all 100 honest transcripts pass; 100% detection for all attack types with ground-truth shortlists (53% for candidate manipulation without ground truth, marking the trust boundary); sub-millisecond per-step verification on real GPT-2 logits.
 
 ## Pre-Computed Results
 
-All result files are included in `eval/` so that readers can inspect the data without re-running experiments. The `--quick` flag on each script produces directionally identical results with smaller sample sizes for fast verification.
+All result files are included in `eval/` so readers can inspect the data without re-running experiments. The `--quick` flag on each script produces directionally identical results with smaller sample sizes for fast verification.
 
 ## License
 

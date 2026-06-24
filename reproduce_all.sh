@@ -7,8 +7,7 @@
 #
 # Requirements:
 #   - Python 3.12+
-#   - For GPT-2 experiment: torch, transformers (pip install torch transformers)
-#   - For figure regeneration: matplotlib, numpy
+#   - For the GPT-2 experiment: torch, transformers, numpy
 #
 # All outputs are written under eval/.
 
@@ -71,35 +70,42 @@ else
 fi
 
 # -------------------------------------------------------------------
-# 2. Main ICTC evaluation (Tables I & II, Section 5)
+# 2. Main detection and operational evaluation
 # -------------------------------------------------------------------
-run_experiment "ICTC main evaluation (Tables I & II)" \
+run_experiment "Main detection + operational evaluation" \
     python3 eval/run_ictc.py $QUICK
 
 # -------------------------------------------------------------------
-# 3. Latency scaling (Figure 2)
+# 3. Reviewer-evidence upgrades (attribution, authenticated root,
+#    determinism, overhead, seed-grinding, CIs)
 # -------------------------------------------------------------------
-run_experiment "Latency scaling (Figure 2)" \
+run_experiment "Reviewer-evidence upgrades" \
+    python3 eval/run_review_upgrades.py
+
+# -------------------------------------------------------------------
+# 4. Latency scaling
+# -------------------------------------------------------------------
+run_experiment "Latency scaling" \
     python3 eval/run_latency_scaling.py $QUICK
 
 # -------------------------------------------------------------------
-# 4. Bias heuristic characterization (Figure 3)
+# 5. Bias-heuristic characterization (supplementary)
 # -------------------------------------------------------------------
-run_experiment "Bias heuristic (Figure 3)" \
+run_experiment "Bias-heuristic characterization" \
     python3 eval/run_bias_heuristic.py $QUICK
 
 # -------------------------------------------------------------------
-# 5. Adaptive adversary analysis (Section 5.3)
+# 6. Adaptive adversary analysis
 # -------------------------------------------------------------------
-run_experiment "Adaptive adversary (Section 5.3)" \
+run_experiment "Adaptive adversary" \
     python3 ref/python/adaptive_attacker.py $QUICK
 
 # -------------------------------------------------------------------
-# 6. GPT-2 validation (Section 5.4)
+# 7. GPT-2 validation
 # -------------------------------------------------------------------
 echo ""
 echo "================================================================"
-echo "  Experiment: GPT-2 validation (Section 5.4)"
+echo "  Experiment: GPT-2 validation"
 echo "================================================================"
 if python3 -c "import torch; import transformers" 2>/dev/null; then
     if python3 eval/extract_gpt2_logits.py; then
@@ -113,27 +119,6 @@ else
     echo "  >> torch/transformers not installed, skipping GPT-2 experiment"
     echo "  >> Install with: pip install torch transformers"
     echo "  >> Pre-computed results available in eval/gpt2_validation_results.json"
-    SKIP=$((SKIP + 1))
-fi
-
-# -------------------------------------------------------------------
-# 7. Regenerate figures (optional)
-# -------------------------------------------------------------------
-echo ""
-echo "================================================================"
-echo "  Regenerating figures"
-echo "================================================================"
-if python3 -c "import matplotlib" 2>/dev/null; then
-    if python3 paper/ictc/generate_figures.py; then
-        echo "  >> Figure generation: PASSED"
-        PASS=$((PASS + 1))
-    else
-        echo "  >> Figure generation: FAILED"
-        FAIL=$((FAIL + 1))
-    fi
-else
-    echo "  >> matplotlib not installed, skipping figure generation"
-    echo "  >> Pre-generated figures available in paper/ictc/figures/"
     SKIP=$((SKIP + 1))
 fi
 
@@ -152,8 +137,9 @@ echo "  Output files:"
 echo "    eval/ictc_results.json           -- Main detection & operational results"
 echo "    eval/ictc_detection.csv          -- Per-attack detection rates"
 echo "    eval/ictc_operational.csv        -- Per-config latency & storage"
-echo "    eval/latency_scaling_results.json -- Latency scaling data (Figure 2)"
-echo "    eval/bias_heuristic_results.json  -- Bias heuristic data (Figure 3)"
+echo "    eval/review_upgrades_results.json -- Attribution, root, determinism, overhead"
+echo "    eval/latency_scaling_results.json -- Latency scaling data"
+echo "    eval/bias_heuristic_results.json  -- Bias-heuristic characterization"
 echo "    eval/adaptive_adversary_results.json -- Adaptive adversary analysis"
 echo "    eval/gpt2_validation_results.json -- GPT-2 logit validation"
 echo ""
