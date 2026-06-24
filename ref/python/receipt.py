@@ -183,6 +183,34 @@ def update_receipt(
 
 
 # ---------------------------------------------------------------------------
+# Authenticated chain root (ReceiptSpec_v1 Section 3.5)
+# ---------------------------------------------------------------------------
+
+def chain_root(transcript: "Transcript") -> bytes:
+    """Recompute the receipt-chain head h_{N-1} from step contents.
+
+    This is the value the provider authenticates (signs / anchors) at
+    generation time and publishes alongside the evidence artifact.  A
+    verifier recomputes it independently from the transcript's per-step
+    (cand_hash, y, Ws, R) and compares against the authenticated root: any
+    party that tampers with a step and re-chains the artifact still produces
+    a root that diverges from the authenticated one, so downstream
+    manipulation is caught WITHOUT external ground-truth candidates.
+
+    Recomputation is independent of the stored per-step receipt_hash, so a
+    stale or forged chain is also caught.
+    """
+    h = init_receipt(transcript.request_id,
+                     transcript.policy_hash, transcript.seed_commit)
+    for s in transcript.steps:
+        h = update_receipt(
+            h, transcript.request_id, transcript.policy_hash,
+            transcript.seed_commit, s.step_index, s.cand_hash, s.y, s.Ws, s.R,
+        )
+    return h
+
+
+# ---------------------------------------------------------------------------
 # Per-step randomness derivation (PublicInputsSpec_v1 Section 2.2)
 # ---------------------------------------------------------------------------
 

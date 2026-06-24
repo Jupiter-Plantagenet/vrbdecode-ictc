@@ -1,0 +1,109 @@
+{
+  "U1_attribution": {
+    "policy_mismatch": {
+      "correct": 100,
+      "total": 100,
+      "expected_code": "policy_mismatch",
+      "code_cofire": {
+        "policy_mismatch": 100
+      }
+    },
+    "randomness_replay": {
+      "correct": 100,
+      "total": 100,
+      "expected_code": "randomness_replay",
+      "code_cofire": {
+        "randomness_replay": 100,
+        "randomness_bias": 100
+      }
+    },
+    "candidate_manip_gt": {
+      "correct": 100,
+      "total": 100,
+      "expected_code": "candidate_manipulation",
+      "code_cofire": {
+        "candidate_manipulation": 100,
+        "randomness_bias": 13
+      }
+    },
+    "transcript_drop": {
+      "correct": 100,
+      "total": 100,
+      "expected_code": "transcript_discontinuity",
+      "code_cofire": {
+        "transcript_discontinuity": 100,
+        "randomness_bias": 1
+      }
+    },
+    "transcript_reorder": {
+      "correct": 100,
+      "total": 100,
+      "expected_code": "transcript_discontinuity",
+      "code_cofire": {
+        "transcript_discontinuity": 100
+      }
+    }
+  },
+  "U2_authenticated_root": {
+    "with_authenticated_root": {
+      "detected": 100,
+      "total": 100
+    },
+    "no_root_baseline": {
+      "detected": 13,
+      "total": 100
+    },
+    "K": 32,
+    "N": 32
+  },
+  "U3_determinism": {
+    "processes": 12,
+    "distinct_roots": 1,
+    "all_identical": true,
+    "in_process_repeats": 1000,
+    "in_process_all_identical": true,
+    "root": "c57bf8340b4bea9b1f5c06a9f44d2c91fe49bda4b9dbb13bbdf4a4b74d6e41fe"
+  },
+  "U4_overhead": {
+    "K": 32,
+    "N": 32,
+    "reps": 200,
+    "gen_per_transcript_ms": 2.3691,
+    "decode_only_per_transcript_ms": 1.0402,
+    "receipt_overhead_per_transcript_ms": 1.3289,
+    "receipt_overhead_per_step_ms": 0.04153
+  },
+  "U5_seed_grinding": {
+    "step": 5,
+    "target_token_rank": 2,
+    "tries_to_force_target": 4,
+    "forced_transcript_verifies_clean": true,
+    "interpretation": "provider-controlled sigma is grindable and the forced transcript passes; VRF/beacon removes sigma control"
+  },
+  "U6_wilson_cis": {
+    "false_positive": {
+      "k": 0,
+      "n": 10000,
+      "ci95_pct": [
+        0.0,
+        0.0384
+      ]
+    },
+    "adaptive_output_evasion": {
+      "k": 0,
+      "n": 200,
+      "ci95_pct": [
+        0.0,
+        1.8846
+      ]
+    },
+    "gpt2_honest_pass": {
+      "k": 100,
+      "n": 100,
+      "ci95_pct": [
+        96.3005,
+        100.0
+      ]
+    }
+  }
+}
